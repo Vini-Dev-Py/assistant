@@ -9,7 +9,7 @@ function isValidQuestion(value: unknown): value is string {
 export class QuestionController {
   constructor(private readonly echoQuestionUseCase: EchoQuestionUseCase) {}
 
-  ask = async (request: FastifyRequest, reply: FastifyReply) => {
+  async handler(request: FastifyRequest, reply: FastifyReply) {
     const body = request.body as Partial<QuestionBody> | undefined;
 
     if (!body || !isValidQuestion(body.question)) {
@@ -21,5 +21,5 @@ export class QuestionController {
     });
 
     return reply.status(200).send(response);
-  };
+  }
 }

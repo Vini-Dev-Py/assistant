@@ -18,6 +18,6 @@ export async function registerQuestionRoutes(app: FastifyInstance) {
   app.post(
     "/questions",
     { preHandler: authMiddleware },
-    questionController.ask
+    questionController.handler
   );
 }
