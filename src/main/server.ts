@@ -1,26 +1,34 @@
-import { PrismaClient } from "@prisma/client";
 import Fastify from "fastify";
+import { prisma } from "@/infrastructure/database/prisma-client";
+import { registerAuthRoutes } from "@/main/routes/auth-routes";
 
-const prisma = new PrismaClient();
+export async function createServer() {
+  const app = Fastify({ logger: true });
 
-const fastify = Fastify({ logger: true });
+  app.get("/health", async () => ({ status: "ok" }));
 
-fastify.get("/", async (request, reply) => {
-  return { message: "Hello, Fastify with Prisma!" };
-});
+  await registerAuthRoutes(app);
 
-fastify.addHook("onClose", async () => {
-  await prisma.$disconnect();
-});
+  app.addHook("onClose", async () => {
+    await prisma.$disconnect();
+  });
 
-const start = async () => {
+  return app;
+}
+
+async function start() {
   try {
-    await fastify.listen({ port: 3001, host: "0.0.0.0" });
-    fastify.log.info(`Server running at http://localhost:3001`);
-  } catch (err) {
-    fastify.log.error(err);
+    const app = await createServer();
+    const port = Number(process.env.PORT ?? 3001);
+    const host = process.env.HOST ?? "0.0.0.0";
+
+    await app.listen({ port, host });
+
+    app.log.info(`Server running at http://${host}:${port}`);
+  } catch (error) {
+    console.error("Failed to start server", error);
     process.exit(1);
   }
-};
+}
 
 start();
