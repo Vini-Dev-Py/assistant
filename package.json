@@ -1,0 +1,38 @@
+{
+  "name": "teamshow-assistant",
+  "version": "1.0.0",
+  "main": "server.ts",
+  "module": "ESNext",
+  "scripts": {
+    "dev": "nodemon",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "bcrypt": "^6.0.0",
+    "fastify": "^5.6.1",
+    "prisma": "^6.18.0",
+    "tsconfig-paths": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.1",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.10",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  },
+  "type": "module"
+}
