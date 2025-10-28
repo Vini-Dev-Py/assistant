@@ -10,7 +10,7 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "migrate": "prisma migrate deploy",
-    "seed": "prisma db seed"
+    "seed": "npx prisma generate && npx prisma db seed"
   },
   "keywords": [],
   "author": "",
