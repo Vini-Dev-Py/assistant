@@ -1,12 +1,15 @@
-import Fastify from "fastify";
 import { prisma } from "@/infrastructure/database/prisma-client";
 import { registerAuthRoutes } from "@/main/routes/auth-routes";
 import { registerQuestionRoutes } from "@/main/routes/question-routes";
+import Fastify from "fastify";
 
 export async function createServer() {
   const app = Fastify({ logger: true });
 
-  app.get("/health", async () => ({ status: "ok" }));
+  app.get("/health", async () => ({
+    status: 200,
+    message: "Server is healthy",
+  }));
 
   await registerAuthRoutes(app);
   await registerQuestionRoutes(app);
