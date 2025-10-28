@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import { prisma } from "@/infrastructure/database/prisma-client";
 import { registerAuthRoutes } from "@/main/routes/auth-routes";
+import { registerQuestionRoutes } from "@/main/routes/question-routes";
 
 export async function createServer() {
   const app = Fastify({ logger: true });
@@ -8,6 +9,7 @@ export async function createServer() {
   app.get("/health", async () => ({ status: "ok" }));
 
   await registerAuthRoutes(app);
+  await registerQuestionRoutes(app);
 
   app.addHook("onClose", async () => {
     await prisma.$disconnect();
