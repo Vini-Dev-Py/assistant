@@ -1,12 +1,13 @@
 import { TokenService } from "@/application/contracts/token-service";
 import { UserRepository } from "@/domain/repositories/user-repository";
-import { FastifyReply, FastifyRequest } from "fastify";
+import { AuthenticatedRequest } from "@/presentation/interfaces/authenticated-request";
+import { FastifyReply } from "fastify";
 
 export function createAuthMiddleware(
   tokenService: TokenService,
   userRepository: UserRepository,
 ) {
-  return async function authMiddleware(request: FastifyRequest, reply: FastifyReply) {
+  return async function authMiddleware(request: AuthenticatedRequest, reply: FastifyReply) {
     const authorization = request.headers.authorization;
 
     if (!authorization || !authorization.startsWith("Bearer ")) {

@@ -5,6 +5,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { ApplicationError } from "@/application/errors/application-error";
 import { TokenService } from "@/application/contracts/token-service";
 import { User } from "@/domain/entities/user";
+import { AuthenticatedRequest } from "@/presentation/interfaces/authenticated-request";
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -71,7 +72,7 @@ export class AuthController {
     }
   };
 
-  profile = async (request: FastifyRequest, reply: FastifyReply) => {
+  profile = async (request: AuthenticatedRequest, reply: FastifyReply) => {
     if (!request.currentUser) {
       return reply.status(401).send({ message: "Unauthorized" });
     }
@@ -79,7 +80,7 @@ export class AuthController {
     return reply.status(200).send({ user: sanitizeUser(request.currentUser) });
   };
 
-  refresh = async (request: FastifyRequest, reply: FastifyReply) => {
+  refresh = async (request: AuthenticatedRequest, reply: FastifyReply) => {
     if (!request.currentUser) {
       return reply.status(401).send({ message: "Unauthorized" });
     }
