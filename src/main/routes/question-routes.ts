@@ -6,12 +6,18 @@ import { QuestionController } from "@/presentation/controllers/question-controll
 import { FastifyInstance } from "fastify";
 
 export async function registerQuestionRoutes(app: FastifyInstance) {
-  const tokenService = new JwtTokenService(process.env.JWT_SECRET ?? "change-me");
+  const tokenService = new JwtTokenService(
+    process.env.JWT_SECRET ?? "change-me"
+  );
   const userRepository = new PrismaUserRepository();
   const authMiddleware = createAuthMiddleware(tokenService, userRepository);
 
   const echoQuestionUseCase = new EchoQuestionUseCase();
   const questionController = new QuestionController(echoQuestionUseCase);
 
-  app.post("/questions", { preHandler: authMiddleware }, questionController.ask);
+  app.post(
+    "/questions",
+    { preHandler: authMiddleware },
+    questionController.ask
+  );
 }
