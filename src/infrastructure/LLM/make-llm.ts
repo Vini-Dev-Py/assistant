@@ -31,7 +31,8 @@ class GroqChatStrategy implements LLMStrategy<ChatGroq> {
   create(apiKey: string): ChatGroq {
     return new ChatGroq({
       apiKey,
-      model: 'llama-3.3-70b-versatile'
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.2
     })
   }
 }
