@@ -1,7 +1,7 @@
+import { CreateChatUseCase } from "@/application/use-cases/create-chat";
 import { ApplicationError } from "@/application/errors/application-error";
-import { SubmitQuestionUseCase } from "@/application/use-cases/submit-question";
-import { QuestionBody } from "@/presentation/interfaces/question";
 import { AuthenticatedRequest } from "@/presentation/interfaces/authenticated-request";
+import { CreateChatBody } from "@/presentation/interfaces/chat";
 import { FastifyReply } from "fastify";
 import Joi from "joi";
 
@@ -10,20 +10,22 @@ const validationOptions = {
   stripUnknown: true,
 };
 
-const questionSchema = Joi.object<QuestionBody>({
-  question: Joi.string().trim().min(1).required(),
-  chatId: Joi.number().integer().positive().required(),
+const createChatSchema = Joi.object<CreateChatBody>({
+  title: Joi.string().trim().min(1).required(),
 });
 
-export class QuestionController {
-  constructor(private readonly submitQuestionUseCase: SubmitQuestionUseCase) {}
+export class ChatController {
+  constructor(private readonly createChatUseCase: CreateChatUseCase) {}
 
-  async handler(request: AuthenticatedRequest, reply: FastifyReply) {
+  async create(request: AuthenticatedRequest, reply: FastifyReply) {
     if (!request.currentUser) {
       return reply.status(401).send({ message: "Unauthorized" });
     }
 
-    const { value, error } = questionSchema.validate(request.body, validationOptions);
+    const { value, error } = createChatSchema.validate(
+      request.body,
+      validationOptions,
+    );
 
     if (error) {
       return reply.status(400).send({
@@ -32,22 +34,21 @@ export class QuestionController {
       });
     }
 
-    const body = value as QuestionBody;
+    const body = value as CreateChatBody;
 
     try {
-      const { answer } = await this.submitQuestionUseCase.execute({
-        question: body.question.trim(),
-        chatId: body.chatId,
+      const { chat } = await this.createChatUseCase.execute({
+        title: body.title.trim(),
         userId: request.currentUser.id,
       });
 
-      return reply.status(200).send({ question: answer });
+      return reply.status(201).send({ chat });
     } catch (error: unknown) {
       if (error instanceof ApplicationError) {
         return reply.status(error.statusCode).send({ message: error.message });
       }
 
-      request.log.error({ err: error }, "Unexpected error while handling question");
+      request.log.error({ err: error }, "Unexpected error while creating chat");
       return reply.status(500).send({ message: "Internal server error" });
     }
   }

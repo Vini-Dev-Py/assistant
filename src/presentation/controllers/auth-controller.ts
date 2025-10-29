@@ -9,10 +9,23 @@ import {
 } from "@/presentation/interfaces/auth";
 import { AuthenticatedRequest } from "@/presentation/interfaces/authenticated-request";
 import { FastifyReply, FastifyRequest } from "fastify";
+import Joi from "joi";
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
-}
+const validationOptions = {
+  abortEarly: false,
+  stripUnknown: true,
+};
+
+const registerSchema = Joi.object<RegisterUserBody>({
+  name: Joi.string().trim().min(1).required(),
+  email: Joi.string().trim().email().required(),
+  password: Joi.string().min(6).required(),
+});
+
+const authenticateSchema = Joi.object<AuthenticateUserBody>({
+  email: Joi.string().trim().email().required(),
+  password: Joi.string().min(1).required(),
+});
 
 function sanitizeUser(user: User): Omit<User, "password"> {
   const { password: _password, ...rest } = user;
@@ -27,16 +40,16 @@ export class AuthController {
   ) {}
 
   async register(request: FastifyRequest, reply: FastifyReply) {
-    const body = request.body as Partial<RegisterUserBody> | undefined;
+    const { value, error } = registerSchema.validate(request.body, validationOptions);
 
-    if (
-      !body ||
-      !isNonEmptyString(body.name) ||
-      !isNonEmptyString(body.email) ||
-      !isNonEmptyString(body.password)
-    ) {
-      return reply.status(400).send({ message: "Invalid request body" });
+    if (error) {
+      return reply.status(400).send({
+        message: "Invalid request body",
+        details: error.details.map((detail) => detail.message),
+      });
     }
+
+    const body = value as RegisterUserBody;
 
     try {
       const { user } = await this.registerUserUseCase.execute({
@@ -60,15 +73,19 @@ export class AuthController {
   }
 
   async login(request: FastifyRequest, reply: FastifyReply) {
-    const body = request.body as Partial<AuthenticateUserBody> | undefined;
+    const { value, error } = authenticateSchema.validate(
+      request.body,
+      validationOptions,
+    );
 
-    if (
-      !body ||
-      !isNonEmptyString(body.email) ||
-      !isNonEmptyString(body.password)
-    ) {
-      return reply.status(400).send({ message: "Invalid request body" });
+    if (error) {
+      return reply.status(400).send({
+        message: "Invalid request body",
+        details: error.details.map((detail) => detail.message),
+      });
     }
+
+    const body = value as AuthenticateUserBody;
 
     try {
       const { token, user } = await this.authenticateUserUseCase.execute({

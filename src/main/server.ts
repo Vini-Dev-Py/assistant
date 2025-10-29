@@ -1,5 +1,6 @@
 import { prisma } from "@/infrastructure/database/prisma-client";
 import { registerAuthRoutes } from "@/main/routes/auth-routes";
+import { registerChatRoutes } from "@/main/routes/chat-routes";
 import { registerKnowledgeBaseRoutes } from "@/main/routes/knowledge-base-routes";
 import { registerQuestionRoutes } from "@/main/routes/question-routes";
 import Fastify from "fastify";
@@ -14,6 +15,7 @@ export async function createServer() {
 
   await registerAuthRoutes(app);
   await registerQuestionRoutes(app);
+  await registerChatRoutes(app);
   await registerKnowledgeBaseRoutes(app);
 
   app.addHook("onClose", async () => {
