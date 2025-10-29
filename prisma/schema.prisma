@@ -19,13 +19,24 @@ model User {
 }
 
 model KnowledgeBaseEntry {
+  /// Identificador numérico autoincremental que garante a unicidade da entrada.
   id             Int                   @id @default(autoincrement())
+  /// Vetor de embedding (pgvector) utilizado para buscas semânticas e cálculo de similaridade.
   embedding      Unsupported("vector")
+  /// Texto original completo indexado na base de conhecimento.
   rawText        String
+  /// Resumo do texto original para visualizações rápidas ou respostas sintéticas.
   summary        String
+  /// Referência opcional para a origem do conhecimento (URL, documento, etc.).
   source         String?
+  /// Identificador do modelo de embedding usado na indexação, permitindo reproduzir os resultados.
   embeddingModel String?
+  /// Prompt aplicado durante a geração do embedding ou resumo, facilitando a replicação do processo.
+  prompt         String?
+  /// Dados estruturados adicionais (tags, idioma, autor, etc.).
   metadata       Json?
+  /// Data de criação da entrada.
   createdAt      DateTime              @default(now())
+  /// Data da última atualização da entrada.
   updatedAt      DateTime              @updatedAt
 }
