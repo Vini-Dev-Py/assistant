@@ -15,7 +15,7 @@ A aplicação está organizada nos seguintes módulos:
 ## Pré-requisitos
 
 - Node.js 18+
-- PostgreSQL (ou o banco compatível configurado no `.env`)
+- PostgreSQL (ou o banco compatível configurado no `.env`). Caso utilize Docker, o `docker-compose.yml` já está configurado com a imagem `pgvector/pgvector:pg15`, que disponibiliza a extensão `vector` exigida pelas migrações.
 
 ## Configuração
 
@@ -35,7 +35,13 @@ A aplicação está organizada nos seguintes módulos:
    JWT_REFRESH_EXPIRES_IN="7d"
    ```
 
-3. Execute as migrações e a seed:
+3. (Opcional) Suba o banco local com Docker:
+
+   ```bash
+   docker compose up -d db
+   ```
+
+4. Execute as migrações e a seed:
 
    ```bash
    npm run migrate
