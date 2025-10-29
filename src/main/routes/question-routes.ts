@@ -1,4 +1,5 @@
 import { NextQuestionPlanner } from '@/application/use-cases/next-question-planner'
+import { LangchainQuestionLanguageModel } from '@/infrastructure/LLM/langchain-question-language-model'
 import { PrismaUserRepository } from '@/infrastructure/repositories/prisma-user-repository'
 import { JwtTokenService } from '@/infrastructure/security/jwt-token-service'
 import { createAuthMiddleware } from '@/main/middleware/auth-middleware'
@@ -10,7 +11,11 @@ export async function registerQuestionRoutes(app: FastifyInstance) {
   const userRepository = new PrismaUserRepository()
   const authMiddleware = createAuthMiddleware(tokenService, userRepository)
 
-  const nextQuestionPlanner = new NextQuestionPlanner()
+  const questionLanguageModel = new LangchainQuestionLanguageModel(
+    'groq',
+    process.env.GROQ_API_KEY ?? ''
+  )
+  const nextQuestionPlanner = new NextQuestionPlanner(questionLanguageModel)
   const questionController = new QuestionController(nextQuestionPlanner)
 
   app.post('/questions', { preHandler: authMiddleware }, (request, reply) =>

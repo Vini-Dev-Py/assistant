@@ -6,7 +6,7 @@ type LLMMap = {
   groq: ChatGroq
 }
 
-type LLMProvider = keyof LLMMap
+export type LLMProvider = keyof LLMMap
 
 export class ChatModel {
   makeLLM<P extends LLMProvider>(provider: P, apiKey: string): LLMMap[P] {
