@@ -3,18 +3,21 @@ import { ApplicationError } from "@/application/errors/application-error";
 import { AuthenticatedRequest } from "@/presentation/interfaces/authenticated-request";
 import { CreateKnowledgeBaseEntryBody } from "@/presentation/interfaces/knowledge-base";
 import { FastifyReply } from "fastify";
+import Joi from "joi";
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
-}
+const validationOptions = {
+  abortEarly: false,
+  stripUnknown: true,
+};
 
-function isOptionalString(value: unknown): value is string | undefined {
-  return value === undefined || typeof value === "string";
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+const createEntrySchema = Joi.object<CreateKnowledgeBaseEntryBody>({
+  rawText: Joi.string().trim().min(1).required(),
+  summary: Joi.string().trim().min(1).required(),
+  embedding: Joi.array().items(Joi.number().required()).min(1).required(),
+  source: Joi.string().trim().allow("").optional(),
+  embeddingModel: Joi.string().trim().allow("").optional(),
+  metadata: Joi.object().optional(),
+});
 
 function sanitizeEntry(entry: {
   id: number;
@@ -46,34 +49,19 @@ export class KnowledgeBaseController {
   ) {}
 
   async create(request: AuthenticatedRequest, reply: FastifyReply) {
-    const body = request.body as Partial<CreateKnowledgeBaseEntryBody> | undefined;
+    const { value, error } = createEntrySchema.validate(
+      request.body,
+      validationOptions,
+    );
 
-    if (!body || !isNonEmptyString(body.rawText) || !isNonEmptyString(body.summary)) {
-      return reply.status(400).send({ message: "Invalid request body" });
+    if (error) {
+      return reply.status(400).send({
+        message: "Invalid request body",
+        details: error.details.map((detail) => detail.message),
+      });
     }
 
-    if (!Array.isArray(body.embedding) || body.embedding.length === 0) {
-      return reply.status(400).send({ message: "Embedding must be a non-empty array" });
-    }
-
-    if (
-      !body.embedding.every(
-        (value) => typeof value === "number" && Number.isFinite(value),
-      )
-    ) {
-      return reply
-        .status(400)
-        .send({ message: "Embedding array must contain only finite numbers" });
-    }
-
-    if (!isOptionalString(body.source) || !isOptionalString(body.embeddingModel)) {
-      return reply.status(400).send({ message: "Invalid request body" });
-    }
-
-    if (body.metadata !== undefined && !isPlainObject(body.metadata)) {
-      return reply.status(400).send({ message: "Metadata must be an object" });
-    }
-
+    const body = value as CreateKnowledgeBaseEntryBody;
     const metadata = body.metadata as Record<string, unknown> | undefined;
 
     try {
