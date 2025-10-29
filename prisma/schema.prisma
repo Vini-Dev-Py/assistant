@@ -18,25 +18,38 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+
+/// Modelo: KnowledgeBaseEntry
+/// Representa uma entrada na base de conhecimento projetada para suportar buscas semânticas,
+/// armazenamento de embeddings e metadados associados para rastreabilidade e filtragem.
+/// Cada instância contém o conteúdo original, um embedding vetorial para similaridade,
+/// um resumo para visualizações rápidas e informações sobre a origem e o processo de indexação.
+///
+/// Campos:
+/// - id: Identificador único autoincremental da entrada.
+/// - embedding: Vetor de embedding (pgvector) usado para buscas semânticas e cálculo de similaridade.
+/// - rawText: Texto original completo indexado na base de conhecimento.
+/// - summary: Resumo sintético do texto original para exibição ou respostas rápidas.
+/// - source: Referência opcional à origem do conteúdo (URL, caminho de documento, etc.) para prover provenance.
+/// - embeddingModel: Identificador do modelo de embedding utilizado, útil para reproduzir/avaliar resultados.
+/// - prompt: Prompt aplicado durante a geração do embedding ou do resumo, para auditoria e replicabilidade.
+/// - metadata: Dados estruturados adicionais (tags, idioma, autor, categorias, etc.) para filtragem e enriquecimento.
+/// - createdAt: Data de criação da entrada (valor padrão: now()).
+/// - updatedAt: Data da última atualização (atualizada automaticamente).
+///
+/// Uso recomendado:
+/// - Armazenar textos indexados com seus embeddings para recuperação semântica.
+/// - Conservar informações de provenance e do pipeline de geração (modelo, prompt) para auditoria.
+/// - Utilizar metadata para facetas de busca, filtragem por idioma/autor/etiquetas e enriquecimento de resultados.
 model KnowledgeBaseEntry {
-  /// Identificador numérico autoincremental que garante a unicidade da entrada.
   id             Int                   @id @default(autoincrement())
-  /// Vetor de embedding (pgvector) utilizado para buscas semânticas e cálculo de similaridade.
   embedding      Unsupported("vector")
-  /// Texto original completo indexado na base de conhecimento.
   rawText        String
-  /// Resumo do texto original para visualizações rápidas ou respostas sintéticas.
   summary        String
-  /// Referência opcional para a origem do conhecimento (URL, documento, etc.).
   source         String?
-  /// Identificador do modelo de embedding usado na indexação, permitindo reproduzir os resultados.
   embeddingModel String?
-  /// Prompt aplicado durante a geração do embedding ou resumo, facilitando a replicação do processo.
   prompt         String?
-  /// Dados estruturados adicionais (tags, idioma, autor, etc.).
   metadata       Json?
-  /// Data de criação da entrada.
   createdAt      DateTime              @default(now())
-  /// Data da última atualização da entrada.
   updatedAt      DateTime              @updatedAt
 }
