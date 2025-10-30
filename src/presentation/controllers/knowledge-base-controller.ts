@@ -12,7 +12,10 @@ const validationOptions = {
 
 const createEntrySchema = Joi.object<CreateKnowledgeBaseEntryBody>({
   rawText: Joi.string().trim().min(1).required(),
+  summary: Joi.string().trim().min(1).required(),
+  embedding: Joi.array().items(Joi.number().required()).min(1).required(),
   source: Joi.string().trim().allow("").optional(),
+  embeddingModel: Joi.string().trim().allow("").optional(),
   metadata: Joi.object().optional(),
 });
 
@@ -64,7 +67,13 @@ export class KnowledgeBaseController {
     try {
       const { entry } = await this.createKnowledgeBaseEntryUseCase.execute({
         rawText: body.rawText.trim(),
+        summary: body.summary.trim(),
+        embedding: body.embedding,
         source: typeof body.source === "string" ? body.source.trim() || null : null,
+        embeddingModel:
+          typeof body.embeddingModel === "string"
+            ? body.embeddingModel.trim() || null
+            : null,
         metadata: metadata ?? null,
       });
 

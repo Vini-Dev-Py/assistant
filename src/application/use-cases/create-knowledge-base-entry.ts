@@ -1,5 +1,3 @@
-import { TextEmbeddingGenerator } from "@/application/contracts/text-embedding-generator";
-import { TextSummarizer } from "@/application/contracts/text-summarizer";
 import { ApplicationError } from "@/application/errors/application-error";
 import { InvalidEmbeddingVectorError } from "@/application/errors/invalid-embedding-vector-error";
 import {
@@ -10,7 +8,10 @@ import { KnowledgeBaseRepository } from "@/domain/repositories/knowledge-base-re
 
 interface CreateKnowledgeBaseEntryInput {
   rawText: string;
+  summary: string;
+  embedding: number[];
   source?: string | null;
+  embeddingModel?: string | null;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -25,8 +26,6 @@ function isFiniteNumber(value: number): boolean {
 export class CreateKnowledgeBaseEntryUseCase {
   constructor(
     private readonly knowledgeBaseRepository: KnowledgeBaseRepository,
-    private readonly textSummarizer: TextSummarizer,
-    private readonly embeddingGenerator: TextEmbeddingGenerator,
     private readonly embeddingDimension: number,
   ) {
     if (!Number.isInteger(embeddingDimension) || embeddingDimension <= 0) {
@@ -37,15 +36,7 @@ export class CreateKnowledgeBaseEntryUseCase {
   async execute(
     input: CreateKnowledgeBaseEntryInput,
   ): Promise<CreateKnowledgeBaseEntryOutput> {
-    const trimmedText = input.rawText.trim();
-    const sanitizedMetadata = input.metadata ?? null;
-
-    const summaryResult = await this.textSummarizer.summarize(trimmedText);
-    const embeddingVector = await this.embeddingGenerator.generateEmbedding(
-      trimmedText,
-    );
-
-    const sanitizedEmbedding = embeddingVector.map((value) => Number(value));
+    const sanitizedEmbedding = input.embedding.map((value) => Number(value));
 
     if (sanitizedEmbedding.length !== this.embeddingDimension) {
       throw new InvalidEmbeddingVectorError(
@@ -58,15 +49,13 @@ export class CreateKnowledgeBaseEntryUseCase {
       throw new ApplicationError("Embedding vector must contain only finite numbers.");
     }
 
-    const embeddingModelIdentifier = `${summaryResult.provider}:${summaryResult.model}`;
-
     const data: NewKnowledgeBaseEntry = {
-      rawText: trimmedText,
-      summary: summaryResult.summary,
+      rawText: input.rawText,
+      summary: input.summary,
       embedding: sanitizedEmbedding,
       source: input.source ?? null,
-      embeddingModel: embeddingModelIdentifier,
-      metadata: sanitizedMetadata,
+      embeddingModel: input.embeddingModel ?? null,
+      metadata: input.metadata ?? null,
     };
 
     const entry = await this.knowledgeBaseRepository.create(data);
